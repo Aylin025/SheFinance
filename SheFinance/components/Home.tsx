@@ -69,9 +69,9 @@ export const Home: React.FC<HomeProps> = ({ onStart, onLearn }) => {
               <div className="w-12 h-12 bg-[#B58CFF]/30 rounded-xl flex items-center justify-center mb-6">
                 <Zap className="w-6 h-6 text-[#B58CFF]" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">AI Insights</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Education</h3>
               <p className="text-slate-600">
-                Get instant "Tips & Tricks" powered by Gemini to improve your financial literacy on demand.
+                Discover the best modular, foundational resources to build your financial literacy.
               </p>
             </div>
           </div>

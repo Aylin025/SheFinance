@@ -52,7 +52,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onChangeView, balan
               </button>
               <button onClick={() => onChangeView(ViewState.LEARN)} className={navItemClass(ViewState.LEARN)}>
                 <BookOpen className={iconClass(ViewState.LEARN)} />
-                Learn & Tips
+                Learn 
               </button>
             </div>
           </div>

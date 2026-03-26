@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { Home } from './components/Home';
 import { StockMarket } from './components/StockMarket';
 import { Learn } from './components/Learn';
-import { ViewState, UserState, Transaction } from './types';
+import { ViewState, UserState } from './types';
 import { INITIAL_BALANCE } from './constants';
+import { getPortfolio } from './services/api';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>(ViewState.HOME);
@@ -16,55 +17,11 @@ const App: React.FC = () => {
     totalEquity: INITIAL_BALANCE
   });
 
-  const handleTrade = (tx: Transaction) => {
-    setUserState(prev => {
-      const { symbol, quantity, price, type } = tx;
-      const cost = quantity * price;
-      
-      let newBalance = prev.balance;
-      const newPortfolio = { ...prev.portfolio };
-
-      if (type === 'BUY') {
-        newBalance -= cost;
-        const existingItem = newPortfolio[symbol];
-        if (existingItem) {
-          const totalCost = (existingItem.quantity * existingItem.avgCost) + cost;
-          const newQuantity = existingItem.quantity + quantity;
-          newPortfolio[symbol] = {
-            symbol,
-            quantity: newQuantity,
-            avgCost: totalCost / newQuantity
-          };
-        } else {
-          newPortfolio[symbol] = {
-            symbol,
-            quantity,
-            avgCost: price
-          };
-        }
-      } else {
-        newBalance += cost;
-        const existingItem = newPortfolio[symbol];
-        if (existingItem) {
-          const newQuantity = existingItem.quantity - quantity;
-          if (newQuantity <= 0) {
-            delete newPortfolio[symbol];
-          } else {
-            newPortfolio[symbol] = {
-              ...existingItem,
-              quantity: newQuantity
-            };
-          }
-        }
-      }
-
-      return {
-        ...prev,
-        balance: newBalance,
-        portfolio: newPortfolio
-      };
-    });
-  };
+  useEffect(() => {
+    getPortfolio()
+      .then(data => setUserState(data))
+      .catch(err => console.error("Failed to fetch initial portfolio:", err));
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
@@ -85,7 +42,6 @@ const App: React.FC = () => {
         {currentView === ViewState.MARKET && (
           <StockMarket 
             userState={userState} 
-            onTrade={handleTrade} 
             setUserState={setUserState}
           />
         )}

@@ -3,21 +3,18 @@ import { Stock, UserState, Transaction, StockHistoryPoint } from '../types';
 import { INITIAL_STOCKS } from '../constants';
 import { StockChart } from './StockChart';
 import { Button } from './Button';
-import { getMarketAnalysis } from '../services/geminiService';
 import { TrendingUp, RefreshCw, AlertCircle } from 'lucide-react';
+import { getMarket, getMarketHistory, submitTrade } from '../services/api';
 
 interface StockMarketProps {
   userState: UserState;
-  onTrade: (transaction: Transaction) => void;
   setUserState: React.Dispatch<React.SetStateAction<UserState>>;
 }
 
-export const StockMarket: React.FC<StockMarketProps> = ({ userState, onTrade, setUserState }) => {
+export const StockMarket: React.FC<StockMarketProps> = ({ userState, setUserState }) => {
   const [stocks, setStocks] = useState<Stock[]>(INITIAL_STOCKS);
   const [selectedStockSymbol, setSelectedStockSymbol] = useState<string>(INITIAL_STOCKS[0].symbol);
   const [history, setHistory] = useState<Record<string, StockHistoryPoint[]>>({});
-  const [marketNews, setMarketNews] = useState<string>("");
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   
   // Trade state
   const [tradeAmount, setTradeAmount] = useState<string>('');
@@ -30,98 +27,45 @@ export const StockMarket: React.FC<StockMarketProps> = ({ userState, onTrade, se
   const avgCost = portfolioItem?.avgCost || 0;
   const profitLoss = quantity > 0 ? (selectedStock.price - avgCost) * quantity : 0;
 
-  // Initialize history once
+  // Poll for market prices
   useEffect(() => {
-    const initialHistory: Record<string, StockHistoryPoint[]> = {};
-    INITIAL_STOCKS.forEach(stock => {
-      initialHistory[stock.symbol] = Array.from({ length: 20 }).map((_, i) => ({
-        time: new Date(Date.now() - (20 - i) * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        price: stock.price * (1 + (Math.random() - 0.5) * 0.05)
-      }));
-    });
-    setHistory(initialHistory);
-  }, []);
+    getMarket().then(setStocks).catch(console.error);
 
-  // Market Simulation Loop
-  useEffect(() => {
     const interval = setInterval(() => {
-      setStocks(prevStocks => {
-        return prevStocks.map(stock => {
-          const changePercent = (Math.random() - 0.5) * stock.volatility * 2; 
-          const newPrice = Math.max(0.01, stock.price * (1 + changePercent));
-
-          setHistory(prev => {
-            const stockHistory = prev[stock.symbol] || [];
-            const newHistory = [...stockHistory, {
-              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-              price: newPrice
-            }];
-            if (newHistory.length > 30) newHistory.shift(); 
-            return { ...prev, [stock.symbol]: newHistory };
-          });
-
-          return {
-            ...stock,
-            price: newPrice,
-            change: newPrice - stock.price,
-            changePercent: changePercent * 100
-          };
-        });
-      });
-    }, 3000); 
+      getMarket().then(setStocks).catch(console.error);
+    }, 10000); 
 
     return () => clearInterval(interval);
   }, []);
 
-  // FIXED AI Analysis Trigger
-  const handleAnalyze = async () => {
-    setIsAnalyzing(true);
-    setMarketNews("AI is scanning market trends...");
-    try {
-      const analysis = await getMarketAnalysis(selectedStock);
-      setMarketNews(analysis || "The market is currently stable with no significant shifts detected.");
-    } catch (error) {
-      console.error("AI Analysis failed:", error);
-      setMarketNews("Error connecting to AI Analyst. Please check your API key configuration.");
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
+  // Fetch history for selected stock
+  useEffect(() => {
+    getMarketHistory(selectedStockSymbol)
+      .then(data => {
+        setHistory(prev => ({ ...prev, [selectedStockSymbol]: data }));
+      })
+      .catch(console.error);
+  }, [selectedStockSymbol]);
 
-  const handleTrade = () => {
+
+  const handleTrade = async () => {
     const qty = parseInt(tradeAmount);
     if (isNaN(qty) || qty <= 0) return;
 
-    const cost = qty * selectedStock.price;
-
-    if (tradeType === 'BUY') {
-      if (userState.balance < cost) {
-        alert("Insufficient funds!");
-        return;
-      }
-      onTrade({
+    try {
+      const updatedState = await submitTrade({
         id: Date.now().toString(),
         symbol: selectedStock.symbol,
-        type: 'BUY',
+        type: tradeType,
         quantity: qty,
         price: selectedStock.price,
         date: new Date()
       });
-    } else {
-      if (userHolding < qty) {
-        alert("Insufficient holdings!");
-        return;
-      }
-      onTrade({
-        id: Date.now().toString(),
-        symbol: selectedStock.symbol,
-        type: 'SELL',
-        quantity: qty,
-        price: selectedStock.price,
-        date: new Date()
-      });
+      setUserState(updatedState);
+      setTradeAmount('');
+    } catch (error: any) {
+      alert("Trade failed: " + error.message);
     }
-    setTradeAmount('');
   };
 
   return (
@@ -138,7 +82,6 @@ export const StockMarket: React.FC<StockMarketProps> = ({ userState, onTrade, se
               key={stock.symbol}
               onClick={() => {
                 setSelectedStockSymbol(stock.symbol);
-                setMarketNews(""); 
               }}
               className={`p-4 border-b border-slate-50 cursor-pointer hover:bg-slate-50 transition-colors ${selectedStockSymbol === stock.symbol ? 'bg-slate-50 border-l-4 border-l-emerald-500' : ''}`}
             >
@@ -187,23 +130,6 @@ export const StockMarket: React.FC<StockMarketProps> = ({ userState, onTrade, se
             />
         </div>
 
-        {/* AI News Ticker */}
-        <div className="bg-slate-900 text-slate-100 p-4 rounded-xl flex items-start gap-4 shadow-lg">
-            <div className="mt-1">
-                <RefreshCw className={`w-5 h-5 text-blue-400 ${isAnalyzing ? 'animate-spin' : ''}`} />
-            </div>
-            <div className="flex-1">
-                <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-1">AI Market Analyst</h4>
-                <p className="text-sm leading-relaxed">
-                    {marketNews || "Click 'Analyze' to get AI-powered insights on this stock's recent movement."}
-                </p>
-            </div>
-            {!marketNews && (
-                <Button size="sm" variant="secondary" onClick={handleAnalyze} isLoading={isAnalyzing} className="shrink-0 border border-slate-700">
-                    Analyze
-                </Button>
-            )}
-        </div>
 
           {/* Trading Interface */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -283,12 +209,6 @@ export const StockMarket: React.FC<StockMarketProps> = ({ userState, onTrade, se
                       </span>
                     </div>
                     
-                    <div className="mt-4 pt-4 border-t border-slate-100">
-                        <div className="flex items-start gap-2 text-sm text-slate-500">
-                            <AlertCircle className="w-4 h-4 text-emerald-500 mt-0.5" />
-                            <p>Tip: Buy low, sell high. Watch the volatility metric before investing.</p>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

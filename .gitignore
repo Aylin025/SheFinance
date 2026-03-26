@@ -1,0 +1,15 @@
+# OS generated files
+.DS_Store
+
+# Environments
+backend/venv/
+backend/__pycache__/
+SheFinance/node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# dotenv environment variable files
+.env

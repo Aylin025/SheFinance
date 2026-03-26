@@ -1,61 +1,75 @@
-import React, { useState } from 'react';
-import { Button } from './Button';
-import { getFinancialTip } from '../services/geminiService';
-import { Lightbulb, BookOpen, X } from 'lucide-react';
+import React from 'react';
+import { BookOpen, Target, LineChart, ShieldAlert } from 'lucide-react';
 
 export const Learn: React.FC = () => {
-  const [tip, setTip] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-
-  const handleGetTip = async (topic: string) => {
-    setLoading(true);
-    setShowModal(true);
-    const newTip = await getFinancialTip(topic);
-    setTip(newTip);
-    setLoading(false);
-  };
-
-  const categories = [
+  const resources = [
     {
-      id: 'savings',
-      label: 'Savings Strategies',
-      desc: 'How to keep more of what you earn.',
-      bg: 'bg-[#FF8299]/20',
-      hoverBg: 'group-hover:bg-[#FF8299]',
-      icon: 'text-[#FF8299]',
-      hoverIcon: 'group-hover:text-white',
-      buttonHover: 'hover:bg-[#FF8299]/10 hover:border-[#FF8299]/40 hover:text-[#FF8299]',
+      id: 'khan',
+      name: 'Khan Academy',
+      focus: 'Personal Finance + Investing',
+      why: 'Clear, modular lessons you can link alongside trades',
+      how: [
+        'Embed or link specific videos (e.g., "stocks vs bonds") next to trading actions',
+        'Create "Learn before you trade" prompts',
+      ],
+      feature: 'Beginner-friendly explanations that match user actions',
+      bg: 'bg-[#FF8299]/10',
+      iconBg: 'bg-[#FF8299]/20',
+      iconText: 'text-[#FF8299]',
+      borderHover: 'hover:border-[#FF8299]/50 hover:shadow-[#FF8299]/20',
+      icon: BookOpen,
+      url: 'https://www.khanacademy.org/college-careers-more/personal-finance',
     },
     {
-      id: 'investing',
-      label: 'Investing Basics',
-      desc: 'Growing your wealth over time.',
-      bg: 'bg-yellow-100',
-      hoverBg: 'group-hover:bg-yellow-400',
-      icon: 'text-yellow-500',
-      hoverIcon: 'group-hover:text-white',
-      buttonHover: 'hover:bg-yellow-50 hover:border-yellow-200 hover:text-yellow-600',
+      id: 'investopedia',
+      name: 'Investopedia',
+      focus: 'Articles + Simulator Content',
+      why: 'Massive library of definitions and tutorials',
+      how: [
+        'Add tooltips: hover over "P/E ratio" → show definition',
+        'Link articles directly from stock pages',
+      ],
+      feature: 'Simulator content aligns perfectly with practice trading',
+      bg: 'bg-yellow-50',
+      iconBg: 'bg-yellow-100',
+      iconText: 'text-yellow-600',
+      borderHover: 'hover:border-yellow-400 hover:shadow-yellow-200',
+      icon: Target,
+      url: 'https://www.investopedia.com/',
     },
     {
-      id: 'budgeting',
-      label: 'Budgeting 101',
-      desc: 'Tracking expenses and setting limits.',
-      bg: 'bg-emerald-100',
-      hoverBg: 'group-hover:bg-emerald-500',
-      icon: 'text-emerald-600',
-      hoverIcon: 'group-hover:text-white',
-      buttonHover: 'hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700',
+      id: 'tradingview',
+      name: 'TradingView',
+      focus: 'Charts + Community Ideas',
+      why: 'Combines education with real market visuals',
+      how: [
+        'Embed charts with indicators',
+        'Show community trade ideas alongside your paper trading interface',
+      ],
+      feature: 'Helps users learn technical analysis interactively',
+      bg: 'bg-emerald-50',
+      iconBg: 'bg-emerald-100',
+      iconText: 'text-emerald-600',
+      borderHover: 'hover:border-emerald-400 hover:shadow-emerald-200',
+      icon: LineChart,
+      url: 'https://www.tradingview.com/',
     },
     {
-      id: 'debt',
-      label: 'Debt Management',
-      desc: 'Strategies to become debt-free.',
-      bg: 'bg-purple-100',
-      hoverBg: 'group-hover:bg-purple-500',
-      icon: 'text-purple-500',
-      hoverIcon: 'group-hover:text-white',
-      buttonHover: 'hover:bg-purple-50 hover:border-purple-200 hover:text-purple-600',
+      id: 'morningstar',
+      name: 'Morningstar',
+      focus: 'Fundamentals + Analysis',
+      why: 'Teaches why investments are good or bad',
+      how: [
+        'Add simplified analyst ratings or summaries',
+        'Show "learning cards" explaining valuation, risk, etc.',
+      ],
+      feature: 'Strong focus on long-term investing principles',
+      bg: 'bg-purple-50',
+      iconBg: 'bg-purple-100',
+      iconText: 'text-purple-600',
+      borderHover: 'hover:border-purple-400 hover:shadow-purple-200',
+      icon: ShieldAlert,
+      url: 'https://www.morningstar.com/',
     },
   ];
 
@@ -92,46 +106,67 @@ export const Learn: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 space-y-12">
-      {/* Financial Tips Section */}
+      {/* Educational Resources Section */}
       <div>
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-slate-900 mb-4">
-            Financial Knowledge Hub
+            Educational Resources
           </h2>
           <p className="text-slate-600 max-w-2xl mx-auto">
-            Click on a topic below to receive an instant tip tailored for beginners.
-            Learn bite-sized lessons to improve your financial health.
+            Discover the best platforms to build your financial literacy and become confident in your investing journey.
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {categories.map((cat) => (
-            <div
-              key={cat.id}
-              className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all group"
-            >
-              <div
-                className={`w-12 h-12 ${cat.bg} rounded-xl flex items-center justify-center mb-4 transition-colors ${cat.hoverBg}`}
+          {resources.map((res) => {
+            const Icon = res.icon;
+            return (
+              <a
+                href={res.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                key={res.id}
+                className={`bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all flex flex-col justify-between cursor-pointer ${res.borderHover}`}
               >
-                <BookOpen
-                  className={`w-6 h-6 ${cat.icon} transition-colors ${cat.hoverIcon}`}
-                />
-              </div>
+                <div>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${res.iconBg}`}>
+                      <Icon className={`w-6 h-6 ${res.iconText}`} />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-slate-900 leading-tight">
+                        {res.name}
+                      </h3>
+                      <p className="text-sm font-medium text-slate-500">
+                        {res.focus}
+                      </p>
+                    </div>
+                  </div>
 
-              <h3 className="text-xl font-bold text-slate-900 mb-2">
-                {cat.label}
-              </h3>
-              <p className="text-slate-500 mb-6 h-10">{cat.desc}</p>
+                  <div className="space-y-4 mb-4">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Why it works</p>
+                      <p className="text-slate-700 text-sm">{res.why}</p>
+                    </div>
+                    
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">How to use it</p>
+                      <ul className="list-disc list-outside text-slate-700 text-sm space-y-1 ml-4">
+                        {res.how.map((point, idx) => (
+                          <li key={idx} className="leading-snug">{point}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
 
-              <Button
-                onClick={() => handleGetTip(cat.label)}
-                variant="outline"
-                className={`w-full ${cat.buttonHover}`}
-              >
-                Get {cat.label} Tip
-              </Button>
-            </div>
-          ))}
+                <div className={`p-3 rounded-lg ${res.bg} mt-auto border border-white`}>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500/70 mb-1">Best Feature</p>
+                  <p className={`text-sm font-bold ${res.iconText}`}>{res.feature}</p>
+                </div>
+              </a>
+            );
+          })}
         </div>
       </div>
 
@@ -169,61 +204,6 @@ export const Learn: React.FC = () => {
           ))}
         </div>
       </div>
-
-      {/* Tip Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 relative animate-fade-in-up">
-            <button
-              onClick={() => {
-                setShowModal(false);
-                setTip(null);
-              }}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
-
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-6">
-                <Lightbulb
-                  className={`w-8 h-8 text-yellow-600 ${
-                    loading ? 'animate-pulse' : ''
-                  }`}
-                />
-              </div>
-
-              <h3 className="text-2xl font-bold text-slate-900 mb-4">
-                {loading ? 'Generating Insight...' : 'Pro Tip'}
-              </h3>
-
-              {loading ? (
-                <div className="space-y-3 w-full max-w-xs mx-auto">
-                  <div className="h-2 bg-slate-100 rounded animate-pulse"></div>
-                  <div className="h-2 bg-slate-100 rounded animate-pulse w-4/5 mx-auto"></div>
-                  <div className="h-2 bg-slate-100 rounded animate-pulse w-3/5 mx-auto"></div>
-                </div>
-              ) : (
-                <p className="text-lg text-slate-700 font-medium italic">
-                  "{tip}"
-                </p>
-              )}
-
-              <div className="mt-8 w-full">
-                <Button
-                  onClick={() => {
-                    setShowModal(false);
-                    setTip(null);
-                  }}
-                  className="w-full"
-                >
-                  Got it!
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

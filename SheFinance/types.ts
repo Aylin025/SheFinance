@@ -11,7 +11,6 @@ export interface Stock {
   change: number;
   changePercent: number;
   category: string;
-  volatility: number; // 0-1, how much it moves
 }
 
 export interface StockHistoryPoint {
