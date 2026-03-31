@@ -89,6 +89,3 @@ npm run dev
 Finance can feel intimidating and inaccessible — especially for women who are underrepresented in investing. SheFinance aims to close that gap by providing a supportive, educational, and hands-on learning experience.
 
 ---
-
-**Aylin Rym**  
-- LinkedIn: https://linkedin.com/in/AylinRym  
